@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\ChatAppServise;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 

@@ -60,6 +60,7 @@ class ChatAppService
 		$client = new Client();
 		$licenseId = $messenger->getLicenseId();
 		$messengerType = $messenger->getType();
+		ChatAppToken::checkCurrentToken($messenger);
 		$accessToken = $messenger->getChatAppTokenField('accessToken');
 		try {
 			$response = $client->post(
@@ -82,7 +83,7 @@ class ChatAppService
 		}
 	}
 
-	private static function logError(\Exception $e): void
+	public static function logError(\Exception $e): void
 	{
 		print_r([$e->getCode(), $e->getMessage()]);
 

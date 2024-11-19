@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\Messengers\Contracts\MessengerInterface;
+use App\Services\ChatAppService;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -33,5 +37,36 @@ class ChatAppToken extends Model
 				'refreshTokenEndTime' => $result->data->refreshTokenEndTime,
 			]
 		);
+	}
+
+	/**
+	 * @param  MessengerInterface  $messenger
+	 * @return void
+	 * @throws GuzzleException
+	 */
+	public static function checkCurrentToken(MessengerInterface $messenger): void
+	{
+		if (time() > $messenger->getChatAppTokenField('accessTokenEndTime')) {
+			$client = new Client();
+
+			try {
+				$response = $client->post(
+					'https://api.chatapp.online/v1/tokens/refresh',
+					[
+						'headers' => [
+							'Lang' => 'en',
+							'Refresh' => $messenger->getChatAppTokenField('refreshToken'),
+							'Content-Type' => 'application/json',
+						],
+					]
+				);
+
+				$body = $response->getBody();
+				self::updateOrCreateToken(json_decode((string) $body));
+			} catch (\Exception $e) {
+				ChatAppService::logError($e);
+			}
+
+		}
 	}
 }

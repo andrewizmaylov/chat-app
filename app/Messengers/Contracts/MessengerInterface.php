@@ -13,7 +13,6 @@ interface MessengerInterface
 	 */
 	public function getType(): string;
 
-
 	/**
 	 * @param  string  $field
 	 * @return string

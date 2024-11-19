@@ -10,7 +10,7 @@
                     v-model="number"
                     required
                     :class="{'is-invalid': !is_valid}"
-                    placeholder="Номер для отправки сообщения через WhatsApp в формате 922-143-1522"
+                    placeholder="Номер для отправки сообщения через WhatsApp в формате +7-922-112-10-23"
                     class="form_element text-sm"
                     @input="clearValidationError"
                 >

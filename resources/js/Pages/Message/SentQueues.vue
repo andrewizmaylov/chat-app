@@ -34,10 +34,13 @@
                 </div>
             </div>
         </div>
+        <SecondaryButton class="mt-4"
+                         @click="router.get(route('message.send_message'))">Создать новую</SecondaryButton>
     </div>
 </template>
 <script setup>
 import {router} from '@inertiajs/vue3';
+import SecondaryButton from '@/Components/SecondaryButton.vue';
 
 defineProps({
     queues: {

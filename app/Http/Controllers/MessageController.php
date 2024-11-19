@@ -2,15 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\MessengerTypesEnum;
 use App\Jobs\SendMessageJob;
 use App\Messengers\WhatsUpMessenger;
 use App\Models\MessageQueue;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class MessageController extends Controller
 {
@@ -22,6 +23,9 @@ class MessageController extends Controller
 		return Inertia::render('Message/CreateMessage');
 	}
 
+	/**
+	 * @return Response
+	 */
 	public function sentQueues(): Response
 	{
 		return Inertia::render('Message/SentQueues', [
@@ -29,6 +33,9 @@ class MessageController extends Controller
 		]);
 	}
 
+	/**
+	 * @return Response
+	 */
 	public function queueDetails(): Response
 	{
 		return Inertia::render('Message/QueueDetails', [
@@ -38,10 +45,10 @@ class MessageController extends Controller
 
 	/**
 	 * @param  Request  $request
-
-	 * @throws \Throwable
+	 * @return RedirectResponse|JsonResponse
+	 * @throws ValidationException
 	 */
-	public function createMessageQueue(Request $request)
+	public function createMessageQueue(Request $request): JsonResponse|RedirectResponse
 	{
 		$validated = Validator::make($request->all(), [
 			'message' => 'required',
@@ -51,16 +58,16 @@ class MessageController extends Controller
 		$queue_id = MessageQueue::create($validated)->id;
 
 		foreach ($validated['numbers'] as $number) {
-			SendMessageJob::dispatch(new WhatsUpMessenger(
-				env('CHAT_APP_LICENSE'),
-				env('CHAT_APP_ID')
-			), $validated['message'], $number, $queue_id)
-				->delay(now()->addSeconds(rand(1, 3)));
+			SendMessageJob::dispatch(
+				new WhatsUpMessenger(env('CHAT_APP_LICENSE')),
+				$validated['message'],
+				$number,
+				$queue_id
+			)->delay(now()->addSeconds(rand(5, 50)));
 		}
 
 		return request()->wantsJson()
 			? new \Symfony\Component\HttpFoundation\JsonResponse(['message' => 'Messages are being processed in a batch', 'batch' => $queue_id], 200)
 			: back()->with('status', 'created');
-
 	}
 }

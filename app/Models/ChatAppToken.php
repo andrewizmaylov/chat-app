@@ -44,8 +44,12 @@ class ChatAppToken extends Model
 	 * @return void
 	 * @throws GuzzleException
 	 */
-	public static function checkCurrentToken(MessengerInterface $messenger): void
+	public static function checkTokenExistsAndValid(MessengerInterface $messenger): void
 	{
+		if (!self::where('cabinetUserId', env('CHAT_APP_CABINET_ID'))->exists()) {
+			ChatAppService::getTokens();
+		}
+
 		if (time() > $messenger->getChatAppTokenField('accessTokenEndTime')) {
 			$client = new Client();
 

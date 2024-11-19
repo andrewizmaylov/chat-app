@@ -57,10 +57,10 @@ class ChatAppService
 	 */
 	public static function sendMessage(MessengerInterface $messenger, string $message, string $chatId, int $queue_id): void
 	{
+		ChatAppToken::checkTokenExistsAndValid($messenger);
 		$client = new Client();
 		$licenseId = $messenger->getLicenseId();
 		$messengerType = $messenger->getType();
-		ChatAppToken::checkCurrentToken($messenger);
 		$accessToken = $messenger->getChatAppTokenField('accessToken');
 		try {
 			$response = $client->post(

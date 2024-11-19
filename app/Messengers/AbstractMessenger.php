@@ -8,27 +8,17 @@ use App\Models\ChatAppToken;
 abstract class AbstractMessenger implements MessengerInterface
 {
 
-	protected static int $licenseId;
-	protected static string $type;
-	protected static string $chatId;
+	protected ?int $licenseId = null;
+	protected ?string $type = null;
 
-	public function __construct()
+	public function getLicenseId(): int
 	{
-		self::$licenseId = (int) env('CHAT_APP_LICENSE');
-	}
-	public static function getLicenseId(): int
-	{
-		return self::$licenseId;
+		return $this->licenseId;
 	}
 
-	public static function getType(): string
+	public function getType(): string
 	{
-		return static::$type;
-	}
-
-	public static function getChatId(): string
-	{
-		return static::$chatId;
+		return $this->type;
 	}
 
 	/**
@@ -36,7 +26,7 @@ abstract class AbstractMessenger implements MessengerInterface
 	 * @return string
 	 * @throws \Exception
 	 */
-	public static function getChatAppTokenField(string $field): string
+	public function getChatAppTokenField(string $field): string
 	{
 		if (empty(env('CHAT_APP_CABINET_ID'))) {
 			throw new \Exception('cabinetUserId field is required');

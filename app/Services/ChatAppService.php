@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Messengers\Contracts\MessengerInterface;
 use App\Models\ChatAppToken;
+use App\Models\Message;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Support\Facades\Log;
@@ -16,7 +17,7 @@ class ChatAppService
 	 * @return void
 	 * @throws GuzzleException
 	 */
-	public function getTokens(): void
+	public static function getTokens(): void
 	{
 		$client = new Client();
 		try {
@@ -40,7 +41,7 @@ class ChatAppService
 				ChatAppToken::updateOrCreateToken($result);
 			}
 		} catch (\Exception $e) {
-			$this->logError($e);
+			self::logError($e);
 		}
 	}
 
@@ -49,16 +50,17 @@ class ChatAppService
 	 *
 	 * @param  MessengerInterface  $messenger
 	 * @param  string  $message
+	 * @param  string  $chatId
+	 * @param  int  $queue_id
 	 * @return void
 	 * @throws GuzzleException
 	 */
-	public function sendMessage(MessengerInterface $messenger, string $message): void
+	public static function sendMessage(MessengerInterface $messenger, string $message, string $chatId, int $queue_id): void
 	{
 		$client = new Client();
-		$licenseId = $messenger::getLicenseId();
-		$messengerType = $messenger::getType();
-		$chatId = $messenger::getChatId(); // phone or chatId
-		$accessToken = $messenger::getChatAppTokenField('accessToken');
+		$licenseId = $messenger->getLicenseId();
+		$messengerType = $messenger->getType();
+		$accessToken = $messenger->getChatAppTokenField('accessToken');
 		try {
 			$response = $client->post(
 				"https://api.chatapp.online/v1/licenses/$licenseId/messengers/$messengerType/chats/$chatId/messages/text",
@@ -74,18 +76,13 @@ class ChatAppService
 			);
 			$body = $response->getBody();
 
-			$result = json_decode((string)$body);
-			if ($result) {
-				// TODO: # save results to db
-
-				print_r($result);
-			}
+			Message::createRecord(json_decode((string)$body), $queue_id);
 		} catch (\Exception $e) {
-			$this->logError($e);
+			self::logError($e);
 		}
 	}
 
-	private function logError(\Exception $e): void
+	private static function logError(\Exception $e): void
 	{
 		print_r([$e->getCode(), $e->getMessage()]);
 

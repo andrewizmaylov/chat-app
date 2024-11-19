@@ -34,4 +34,8 @@ Route::middleware([
         return Inertia::render('Dashboard');
     })->name('dashboard');
 });
+
+Route::get('/sent_queues', [MessageController::class, 'sentQueues'])->name('message.sent_queues')->middleware(['auth']);
+Route::get('/queue_details', [MessageController::class, 'queueDetails'])->name('message.queue_details')->middleware(['auth']);
 Route::get('/send_message', [MessageController::class, 'sendMessage'])->name('message.send_message')->middleware(['auth']);
+Route::post('/create_message_queue', [MessageController::class, 'createMessageQueue'])->name('message.create_message_queue')->middleware(['auth']);

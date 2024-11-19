@@ -17,7 +17,8 @@
                 <SecondaryButton class="shrink-0"
                                  @click="validatePhoneNumber">Добавить в рассылку</SecondaryButton>
             </section>
-	        
+            <InputError :message="form.errors.numbers"
+                        class="my-2" />
             <span v-if="!is_valid"
                   class="text-red-500 text-sm">Неверный формат номера</span>
 	        
@@ -34,27 +35,31 @@
                       cols="30"
                       rows="10"
                       v-model="form.message"
+                      @input="clearFormError('message')"
                       class="block w-full my-4 rounded-lg border border-gray-200"/>
+            <InputError :message="form.errors.message"
+                        class="mt-2 my-4" />
             <SecondaryButton class="shrink-0"
                              @click="sendMessage">Отправить сообщение</SecondaryButton>
         </section>
     </div>
 </template>
 <script setup>
-import {useForm} from '@inertiajs/vue3';
+import {router, useForm} from '@inertiajs/vue3';
 import {ref} from 'vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
+import InputError from '@/Components/InputError.vue';
 let number = ref('');
-
 
 let is_valid = ref(true);
 function clearValidationError() {
     is_valid.value = true;
 }
 function validatePhoneNumber() {
+    clearFormError('numbers');
     let validated_number = number.value.replace(/[^0-9]/g, '');
 
-    const regex = /^[0-9]{10}$/;
+    const regex = /^[0-9]{11,12}$/;
     is_valid.value = regex.test(validated_number);
     if (is_valid.value) {
         updateNumberList(validated_number);
@@ -68,18 +73,21 @@ let form = useForm({
     message: '',
 });
 function updateNumberList(sanitizedNumber) {
-    form.numbers.push(7 + sanitizedNumber);
+    form.numbers.push(sanitizedNumber);
     number.value = '';
     is_valid.value = true;
 }
 function sendMessage() {
-    form.post(route('message.create_message'), {
-        errorBag: 'message.create_message',
+    form.post(route('message.create_message_queue'), {
+        errorBag: 'message.create_message_queue',
         preserveScroll: true,
         onSuccess: () => {
-            form.reset('numbers', 'message');
+            router.get(route('message.sent_queues'));
         },
     });
+}
+function clearFormError(field) {
+    delete form.errors[field];
 }
 </script>
 <style>

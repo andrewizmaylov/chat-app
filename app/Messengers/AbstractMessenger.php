@@ -34,7 +34,7 @@ abstract class AbstractMessenger implements MessengerInterface
 		if (empty(env('CHAT_APP_CABINET_ID'))) {
 			throw new \Exception('cabinetUserId field is required');
 		}
-		
+
 		if (!ChatAppToken::where('cabinetUserId', env('CHAT_APP_CABINET_ID'))->exists()) {
 			ChatAppService::getTokens();
 		}

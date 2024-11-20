@@ -20,12 +20,12 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
-                            <tr v-for="row in queue.messages"
-                                :key="row.id">
-                                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">{{ row.id }}</td>
-                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ row.chat_id.split('@')[0] }}</td>
-                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ row.status ? 'success' : 'fail' }}</td>
-                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ row.created_at }}</td>
+                            <tr v-for="number in queue.numbers"
+                                :key="number">
+                                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-0">{{ findFromMessages('id', number) }}</td>
+                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ number }}</td>
+                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ findFromMessages('status', number) }}</td>
+                                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">{{ findFromMessages('created_at', number) }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -40,10 +40,30 @@
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import {router} from '@inertiajs/vue3';
 
-defineProps({
+const props = defineProps({
     queue: {
         type: Object,
         required: true
     }
 });
+
+function findFromMessages(key, number) {
+    if (!props.queue?.messages?.length) return null;
+	
+    let founded = props.queue.messages.find(row => row?.chat_id.split('@')[0] === number);
+	
+    if (key === 'status') {
+        return defineStatus(founded);
+    } else {
+        return founded ? founded[key] : null;
+    }
+}
+
+function defineStatus(founded) {
+    if (!founded) {
+        return 'Unprocessed';
+    } else {
+        return founded.status ? 'Success' : 'Fail';
+    }
+}
 </script>

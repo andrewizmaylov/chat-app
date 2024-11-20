@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\FileProcessor\FileProcessor;
 use App\Jobs\SendMessageJob;
 use App\Messengers\WhatsUpMessenger;
 use App\Models\MessageQueue;
@@ -29,7 +30,7 @@ class MessageController extends Controller
 	public function sentQueues(): Response
 	{
 		return Inertia::render('Message/SentQueues', [
-			'queues' => MessageQueue::orderBy('created_at', 'desc')->paginate(40),
+			'queues' => MessageQueue::orderBy('created_at', 'desc')->paginate(15),
 		]);
 	}
 
@@ -69,5 +70,18 @@ class MessageController extends Controller
 		return request()->wantsJson()
 			? new \Symfony\Component\HttpFoundation\JsonResponse(['message' => 'Messages are being processed in a batch', 'batch' => $queue_id], 200)
 			: back()->with('status', 'created');
+	}
+
+	/**
+	 * @throws \Exception
+	 */
+	public function reedFile(Request $request)
+	{
+		$request->validate([
+			'file' => 'required|file|mimes:csv,txt,doc,xml',
+		]);
+		$file = $request->file('file');
+
+		return (new FileProcessor($file->extension()))->reedFromFile($file->getRealPath());
 	}
 }

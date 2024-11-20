@@ -2,7 +2,7 @@
     <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100 text-gray-600">
         <section class="mx-auto w-[80%] bg-white p-8 ringed_rounded max-w-4xl">
             <h1 class="text-center font-medium text-2xl uppercase ">Отправка сообщений</h1>
-            <section class="flex items-center space-x-4 mt-4">
+            <section class="mt-4">
                 <input
                     type="tel"
                     id="phone"
@@ -14,15 +14,34 @@
                     class="form_element text-sm"
                     @input="clearValidationError"
                 >
-                <SecondaryButton class="shrink-0"
-                                 @click="validatePhoneNumber">Добавить в рассылку</SecondaryButton>
+                <section class="flex items-center space-x-4 mt-4">
+                    <SecondaryButton class="shrink-0"
+                                     @click="validatePhoneNumber">Добавить в рассылку</SecondaryButton>
+	                
+                    <form method="post"
+                          enctype="multipart/form-data">
+	                    
+                        <label for="file"
+                               class="shrink-0 cursor-pointer inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150">
+                            Загрузить из файла
+                        </label>
+                        <input type="file"
+                               id="file"
+                               name="file"
+                               class="hidden"
+                               @change="proceedFile($event)"
+                               accept=".doc,.xml,.csv,.txt" />
+                    </form>
+                </section>
             </section>
             <InputError :message="form.errors.numbers"
                         class="my-2" />
             <span v-if="!is_valid"
                   class="text-red-500 text-sm">Неверный формат номера</span>
 	        
-            <section class="grid md:grid-cols-6 grid-cols-3 gap-4 ringed_rounded my-4"
+            <div class="mt-4 text-blue-500"
+                 v-if="count">Импортировано {{ count }} записей</div>
+            <section class="grid md:grid-cols-6 grid-cols-3 gap-4 ringed_rounded my-4 max-h-[260px] overflow-y-auto"
                      v-if="form.numbers.length">
                 <span class="py-2 col-span-1 text-center"
                       v-for="number in form.numbers"
@@ -88,6 +107,26 @@ function sendMessage() {
 }
 function clearFormError(field) {
     delete form.errors[field];
+}
+
+let count = ref(0);
+let file = ref(null);
+function proceedFile($event) {
+    const {target} = $event;
+    if (target && target.files) {
+        [file.value] = target.files;
+        const formData = new FormData();
+        formData.append('file', file.value);
+        axios.post(route('message.create_list_from_file'), formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data', 
+            }
+        }).then((response) => {
+            count.value = response.data.count;
+            form.numbers = response.data.phone_numbers;
+            console.log(response.data);
+        });
+    }
 }
 </script>
 <style>

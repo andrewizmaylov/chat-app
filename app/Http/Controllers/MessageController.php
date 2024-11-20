@@ -65,12 +65,12 @@ class MessageController extends Controller
 
 		foreach ($validated['numbers'] as $phone) {
 			// Add each job to the jobs array
-			$jobs[] = new SendMessageJob(
+			$jobs[] = (new SendMessageJob(
 				new WhatsUpMessenger(env('CHAT_APP_LICENSE')),
 				$validated['message'],
 				$phone,
 				$queue_id
-			);
+			))->delay(now()->addSeconds(rand(4, 50)));
 		}
 
 		// Dispatch the jobs as a batch

@@ -8,6 +8,8 @@ use App\Messengers\WhatsUpMessenger;
 use App\Models\MessageQueue;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -48,6 +50,7 @@ class MessageController extends Controller
 	 * @param  Request  $request
 	 * @return RedirectResponse|JsonResponse
 	 * @throws ValidationException
+	 * @throws \Throwable
 	 */
 	public function createMessageQueue(Request $request): JsonResponse|RedirectResponse
 	{
@@ -58,14 +61,29 @@ class MessageController extends Controller
 
 		$queue_id = MessageQueue::create($validated)->id;
 
-		foreach ($validated['numbers'] as $number) {
-			SendMessageJob::dispatch(
+		$jobs = [];
+
+		foreach ($validated['numbers'] as $phone) {
+			// Add each job to the jobs array
+			$jobs[] = new SendMessageJob(
 				new WhatsUpMessenger(env('CHAT_APP_LICENSE')),
 				$validated['message'],
-				$number,
+				$phone,
 				$queue_id
-			)->delay(now()->addSeconds(rand(5, 50)));
+			);
 		}
+
+		// Dispatch the jobs as a batch
+		Bus::batch($jobs)
+			->then(function ($batch) {
+				// This callback runs after the batch is completed
+				Log::info('Batch completed successfully.');
+			})
+			->catch(function ($batchException) {
+				// This callback runs if any of the jobs in the batch fail
+				Log::error('Batch failed: ' . $batchException->getMessage());
+			})
+			->dispatch();
 
 		return request()->wantsJson()
 			? new \Symfony\Component\HttpFoundation\JsonResponse(['message' => 'Messages are being processed in a batch', 'batch' => $queue_id], 200)

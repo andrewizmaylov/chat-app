@@ -10,10 +10,11 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Bus\Batchable;
 
 class SendMessageJob implements ShouldQueue
 {
-    use Dispatchable, Queueable, SerializesModels;
+    use Batchable, Dispatchable, Queueable, SerializesModels;
 
 
 	private MessengerInterface $messenger;

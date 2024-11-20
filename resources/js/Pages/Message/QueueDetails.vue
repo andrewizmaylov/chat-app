@@ -48,7 +48,7 @@ const props = defineProps({
 });
 
 function findFromMessages(key, number) {
-    if (!props.queue?.messages?.length) return null;
+    if (!props.queue?.messages?.length) return key === 'status' ? 'Unprocessed' : null;
 	
     let founded = props.queue.messages.find(row => row?.chat_id.split('@')[0] === number);
 	

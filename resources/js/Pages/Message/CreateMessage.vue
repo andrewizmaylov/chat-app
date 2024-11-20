@@ -2,8 +2,8 @@
     <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100 text-gray-600">
         <section class="relative mx-auto w-[80%] bg-white p-8 ringed_rounded max-w-4xl">
             <div class="absolute inset-0 bg-white opacity-90 grid place-content-center cursor-pointer"
-                 v-if="license_expired"
-                 @click="router.get(route('message.sent_queues'))">
+                 v-if="license_expired && show_notification"
+                 @click="show_notification = false">
                 <h5 class="text-5xl font-bold uppercase text-center mb-4">License expired</h5>
                 <p>To work with the application, you need to obtain a new LicenseKey and update the data in the .env file</p>
             </div>
@@ -67,6 +67,9 @@
             <SecondaryButton class="shrink-0"
                              @click="sendMessage">Отправить сообщение</SecondaryButton>
         </section>
+	    
+        <p class="text-red-500 text-center mt-4 text-sm font-medium uppercase"
+           v-if="license_expired && !show_notification">Отправка сообщений не производится. Необходимо обновить лицензию!</p>
     </div>
 </template>
 <script setup>
@@ -141,6 +144,8 @@ function proceedFile($event) {
         });
     }
 }
+
+let show_notification = ref(true);
 </script>
 <style>
 .ringed_rounded {

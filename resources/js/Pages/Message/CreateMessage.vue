@@ -1,6 +1,12 @@
 <template>
     <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100 text-gray-600">
-        <section class="mx-auto w-[80%] bg-white p-8 ringed_rounded max-w-4xl">
+        <section class="relative mx-auto w-[80%] bg-white p-8 ringed_rounded max-w-4xl">
+            <div class="absolute inset-0 bg-white opacity-90 grid place-content-center cursor-pointer"
+                 v-if="license_expired"
+                 @click="router.get(route('message.sent_queues'))">
+                <h5 class="text-5xl font-bold uppercase text-center mb-4">License expired</h5>
+                <p>To work with the application, you need to obtain a new LicenseKey and update the data in the .env file</p>
+            </div>
             <h1 class="text-center font-medium text-2xl uppercase ">Отправка сообщений</h1>
             <section class="mt-4">
                 <input
@@ -68,6 +74,13 @@ import {router, useForm} from '@inertiajs/vue3';
 import {ref} from 'vue';
 import SecondaryButton from '@/Components/SecondaryButton.vue';
 import InputError from '@/Components/InputError.vue';
+
+defineProps({
+    license_expired: {
+        type: Boolean,
+    }
+});
+
 let number = ref('');
 
 let is_valid = ref(true);

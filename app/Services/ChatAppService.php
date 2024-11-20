@@ -83,6 +83,30 @@ class ChatAppService
 		}
 	}
 
+	/**
+	 * @param  string $access_token
+	 * @return bool
+	 * @throws GuzzleException
+	 */
+	public static function checkLicenseExpired(string $access_token): bool
+	{
+		$client = new Client();
+		$response = $client->get(
+			'https://api.chatapp.online/v1/licenses',
+			[
+				'headers' => [
+					'Authorization' => $access_token,
+					'Lang' => 'en',
+				],
+			]
+		);
+		$body = $response->getBody();
+
+		$result = json_decode((string) $body);
+
+		return $result->data[0]->status->code === 'failed';
+	}
+
 	public static function logError(\Exception $e): void
 	{
 		print_r([$e->getCode(), $e->getMessage()]);

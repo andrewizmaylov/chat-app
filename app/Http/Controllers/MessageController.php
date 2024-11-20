@@ -6,6 +6,8 @@ use App\FileProcessor\FileProcessor;
 use App\Jobs\SendMessageJob;
 use App\Messengers\WhatsUpMessenger;
 use App\Models\MessageQueue;
+use App\Services\ChatAppService;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Bus;
@@ -20,10 +22,13 @@ class MessageController extends Controller
 {
 	/**
 	 * @return Response
+	 * @throws GuzzleException
 	 */
 	public function sendMessage(): Response
 	{
-		return Inertia::render('Message/CreateMessage');
+		return Inertia::render('Message/CreateMessage', [
+			'license_expired' => ChatAppService::checkLicenseExpired(WhatsUpMessenger::getAccessToken(env('CHAT_APP_LICENSE'))),
+		]);
 	}
 
 	/**
